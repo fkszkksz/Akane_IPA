@@ -30,10 +30,36 @@ namespace IllusionInjector
             }
         }
 
+        private static string FindGameRoot()
+        {
+            string ret = "";
+            string steamLaunchPath = Path.Combine(Path.Combine(Environment.CurrentDirectory, "akane_win64"), "Akane.exe"); 
+            string nonSteamLaunchPath = Path.Combine(Environment.CurrentDirectory, "Akane.exe");
+            bool steamVersionFound = File.Exists(steamLaunchPath);
+            bool nonSteamVersionFound = File.Exists(nonSteamLaunchPath);
+
+            if(!steamVersionFound && !nonSteamVersionFound)
+            {
+                Console.WriteLine("[WARN] Could not find Akane.exe. Start it in the game root directory or use steam to launch it.");
+            }
+            else if(steamVersionFound)
+            {
+                ret = Path.GetDirectoryName(steamLaunchPath);
+            }
+            else
+            {
+                ret = Path.GetDirectoryName(nonSteamLaunchPath);
+            }
+
+            return ret;
+        }
 
         private static void LoadPlugins()
         {
-            string pluginDirectory = Path.Combine(Environment.CurrentDirectory, "Plugins");
+            string gameRootPath = FindGameRoot();
+            if (gameRootPath.Length < 1) return;
+
+            string pluginDirectory = Path.Combine(gameRootPath, "Plugins");
 
             // Process.GetCurrentProcess().MainModule crashes the game and Assembly.GetEntryAssembly() is NULL,
             // so we need to resort to P/Invoke
